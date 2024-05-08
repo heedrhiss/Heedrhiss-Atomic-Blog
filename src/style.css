@@ -176,3 +176,10 @@ aside li button {
   padding: 4px 8px;
   font-size: 14px;
 }
+
+footer {
+  background-color: #ffa94d;
+  /* color: #fff; */
+  padding: 5px;
+  font-weight: 600;
+}

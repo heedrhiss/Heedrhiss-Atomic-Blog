@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { faker } from "@faker-js/faker";
-import { createContext } from "react";
+// import { createContext } from "react";
 import Button from "./Button";
 import { useContext } from "react";
+import {PostProvider, usePosts} from "./Postcontext";
 
 function createRandomPost() {
   return {
@@ -11,42 +12,12 @@ function createRandomPost() {
   };
 }
 
-const PostContext = createContext()
 
 function App() {
-  const [posts, setPosts] = useState(() =>
-    Array.from({ length: 30 }, () => createRandomPost())
-  );
-  const [searchQuery, setSearchQuery] = useState("");
- 
-
-  // Derived state. These are the posts that will actually be displayed
-  const searchedPosts =
-    searchQuery.length > 0
-      ? posts.filter((post) =>
-          `${post.title} ${post.body}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
-      : posts;
-
-  function handleAddPost(post) {
-    setPosts((posts) => [post, ...posts]);
-  }
-
-  function handleClearPosts() {
-    setPosts([]);
-  }
-
 
   return (
     <section>
-      <PostContext.Provider value={
-        {posts: searchedPosts,
-        onClearPosts: handleClearPosts,
-        onAddPost: handleAddPost,
-        searchQuery,
-        setSearchQuery}}>
+      <PostProvider>
       <Button/>
       <Header
         // posts={searchedPosts}
@@ -54,16 +25,16 @@ function App() {
         // searchQuery={searchQuery}
         // setSearchQuery={setSearchQuery}
         />
-      <Main posts={searchedPosts} onAddPost={handleAddPost} />
-      <Archive onAddPost={handleAddPost} />
+      <Main />
+      <Archive />
       <Footer />
-      </PostContext.Provider>
+      </PostProvider>
     </section>
   );
 }
 
 function Header() {
-  const {onClearPosts} = useContext(PostContext);
+  const {onClearPosts} = usePosts();
   return (
     <header>
       <h1>
@@ -82,7 +53,7 @@ function Header() {
 }
 
 function SearchPosts() {
-  const { searchQuery, setSearchQuery } = useContext(PostContext)
+  const { searchQuery, setSearchQuery } = usePosts()
   return (
     <input
       value={searchQuery}
@@ -93,31 +64,30 @@ function SearchPosts() {
 }
 
 function Results() {
-  const {posts} = useContext(PostContext);
+  const {posts} = usePosts();
   return <p>🚀 {posts.length} atomic posts found</p>;
 }
 
 function Main() {
-  const { posts, onAddPost } = useContext(PostContext);
+ 
   return (
     <main>
-      <FormAddPost onAddPost={onAddPost} />
-      <Posts posts={posts} />
+      <FormAddPost />
+      <Posts />
     </main>
   );
 }
 
 function Posts() {
-  const {posts} = useContext(PostContext);
   return (
     <section>
-      <List posts={posts} />
+      <List />
     </section>
   );
 }
 
 function FormAddPost() {
-  const {onAddPost} = useContext(PostContext);
+  const {onAddPost} = usePosts();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
@@ -146,7 +116,8 @@ function FormAddPost() {
   );
 }
 
-function List({ posts }) {
+function List() {
+  const {posts} = usePosts();
   return (
     <ul>
       {posts.map((post, i) => (
@@ -159,7 +130,8 @@ function List({ posts }) {
   );
 }
 
-function Archive({ onAddPost }) {
+function Archive() {
+  const { onAddPost } = usePosts()
   // Here we don't need the setter function. We're only using state to store these posts because the callback function passed into useState (which generates the posts) is only called once, on the initial render. So we use this trick as an optimization technique, because if we just used a regular variable, these posts would be re-created on every render. We could also move the posts outside the components, but I wanted to show you this trick 😉
   const [posts] = useState(() =>
     // 💥 WARNING: This might make your computer slow! Try a smaller `length` first
@@ -192,7 +164,7 @@ function Archive({ onAddPost }) {
 }
 
 function Footer() {
-  return <footer><center>&copy; 2024, By Heedrhiss Codes Playground ✌️</center></footer>;
+  return <footer><center>&copy; 2024. By Heedrhiss Codes Playground ✌️</center></footer>;
 }
 
 export default App;
